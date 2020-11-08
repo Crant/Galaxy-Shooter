@@ -11,6 +11,7 @@ public class Player : MonoBehaviour
     private int _lives = 3;
     [SerializeField]
     private float _speed = 5f;
+    private float _speed_Multiplier = 2f;
     [SerializeField]
     private GameObject _laserPrefab;
     [SerializeField]
@@ -19,6 +20,13 @@ public class Player : MonoBehaviour
     private float _fireRate = 0.15f;
     [SerializeField]
     private bool _isTripleShotActive = false;
+    [SerializeField]
+    private bool _isSpeedBoostActive = false;
+    [SerializeField]
+    private bool _isShieldBoostActive = false;
+    [SerializeField]
+    private GameObject _shieldVisualiser;
+
     private float _canFire = -1f;
     private Spawn_Manager _spawnManager;
 
@@ -96,9 +104,15 @@ public class Player : MonoBehaviour
     }
     public void Damage()
     {
-        _lives--;
+        if(_isShieldBoostActive)
+        {
+            _shieldVisualiser.SetActive(false);
+            _isShieldBoostActive = false;
+            return;
+        }
 
-        if(_lives < 1)
+        _lives--;
+        if (_lives < 1)
         {
             _spawnManager.OnPlayerDeath();
             Destroy(this.gameObject);
@@ -111,9 +125,44 @@ public class Player : MonoBehaviour
         StartCoroutine(TripleShotPowerDownRoutine());
     }
 
+    public void SpeedBoostActive()
+    {
+        _speed *= _speed_Multiplier;
+        _isSpeedBoostActive = true;
+        StartCoroutine(SpeedBoostPowerDownRoutine());
+    }
+    public void ShieldBoostActive()
+    {
+        _shieldVisualiser.SetActive(true);
+        _isShieldBoostActive = true;
+        StartCoroutine(ShieldBoostPowerDownRoutine());
+    }
+
     IEnumerator TripleShotPowerDownRoutine()
     {
-        yield return new WaitForSeconds(5.0f);
-        _isTripleShotActive = false;
+        while(_isTripleShotActive)
+        {
+            yield return new WaitForSeconds(5.0f);
+            _isTripleShotActive = false;
+        }
+    }
+
+    IEnumerator SpeedBoostPowerDownRoutine()
+    {
+        while (_isSpeedBoostActive)
+        {
+            yield return new WaitForSeconds(5.0f);
+            _speed /= _speed_Multiplier;
+            _isSpeedBoostActive = false;
+        }
+    }
+    IEnumerator ShieldBoostPowerDownRoutine()
+    {
+        while (_isShieldBoostActive)
+        {
+            yield return new WaitForSeconds(5.0f);
+            _shieldVisualiser.SetActive(false);
+            _isShieldBoostActive = false;
+        }
     }
 }
