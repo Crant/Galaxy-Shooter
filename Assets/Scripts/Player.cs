@@ -29,19 +29,37 @@ public class Player : MonoBehaviour
 
     private float _canFire = -1f;
     private Spawn_Manager _spawnManager;
+    [SerializeField]
+    private int _score;
 
+    private UIManager _uiManager;
     // Start is called before the first frame update
     void Start()
     {
         transform.position = new Vector3(0, 0, 0);
         _spawnManager = GameObject.Find("Spawn_Manager").GetComponent<Spawn_Manager>();
+        _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
         
         if(_spawnManager == null)
         {
             Debug.LogError("The Spawn Manager is NULL in Player.cs");
         }
+        if (_uiManager == null)
+        {
+            Debug.LogError("The UIManager is NULL in Player.cs");
+        }
     }
-
+    public int Score
+    {
+        get
+        {
+            return _score;
+        }
+        set
+        {
+            _score += value;
+        }
+    }
     // Update is called once per frame
     void Update()
     {
@@ -112,12 +130,22 @@ public class Player : MonoBehaviour
         }
 
         _lives--;
+        _uiManager.UpdateLives(_lives);
+
         if (_lives < 1)
         {
             _spawnManager.OnPlayerDeath();
             Destroy(this.gameObject);
         }
     }
+
+    public void AddScore(int score)
+    {
+        _score += score;
+        _uiManager.UpdateScore(_score);
+    }
+
+    #region PowerDownPowerups
 
     public void TripleShotActive()
     {
@@ -165,4 +193,5 @@ public class Player : MonoBehaviour
             _isShieldBoostActive = false;
         }
     }
+    #endregion
 }
